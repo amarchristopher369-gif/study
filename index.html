@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>StudySpace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Merriweather:wght@400;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bg:#F8FAFC; --surface:#FFFFFF; --surface-2:#F1F3F7;
+  --primary:#4F46E5; --primary-hover:#4338CA; --primary-rgb:79,70,229;
+  --text:#111827; --text-2:#6B7280; --border:#E5E7EB;
+  --success:#16A34A; --warning:#D97706; --error:#DC2626;
+  --radius:12px; --radius-sm:8px;
+  --font-ui:'Inter',system-ui,sans-serif; --font-note:'Inter',system-ui,sans-serif;
+  --shadow:0 1px 2px rgba(17,24,39,.04), 0 2px 8px rgba(17,24,39,.04);
+  --sidebar-w:248px;
+}
+html[data-theme="dark"]{
+  --bg:#0F1117; --surface:#171A21; --surface-2:#1D2029;
+  --text:#F3F4F6; --text-2:#9CA3AF; --border:#272B35;
+  --shadow:0 1px 2px rgba(0,0,0,.3), 0 2px 12px rgba(0,0,0,.25);
+}
+html[data-accent="blue"]{--primary:#2563EB;--primary-hover:#1D4ED8;--primary-rgb:37,99,235;}
+html[data-accent="purple"]{--primary:#7C3AED;--primary-hover:#6D28D9;--primary-rgb:124,58,237;}
+html[data-accent="green"]{--primary:#16A34A;--primary-hover:#15803D;--primary-rgb:22,163,74;}
+html[data-accent="teal"]{--primary:#0D9488;--primary-hover:#0F766E;--primary-rgb:13,148,136;}
+html[data-accent="orange"]{--primary:#D97706;--primary-hover:#B45309;--primary-rgb:217,119,6;}
+html[data-accent="red"]{--primary:#DC2626;--primary-hover:#B91C1C;--primary-rgb:220,38,38;}
+html[data-density="compact"]{--sp:.72;}
+html[data-density="spacious"]{--sp:1.25;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:var(--font-ui);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+@media (prefers-reduced-motion: reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+button,input,textarea,select{font-family:inherit;color:inherit;}
+a{color:inherit;text-decoration:none;}
+::selection{background:rgba(var(--primary-rgb),.25);}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:4px;}
+
+/* ============ LAYOUT ============ */
+.app{display:flex;min-height:100vh;}
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;padding:20px 14px;position:sticky;top:0;height:100vh;transition:width .22s ease;
+}
+.sidebar.collapsed{width:72px;}
+.sidebar.collapsed .brand-name,.sidebar.collapsed .nav-item span,.sidebar.collapsed .profile-name,.sidebar.collapsed .nav-label{display:none;}
+.brand{display:flex;align-items:center;gap:10px;padding:6px 8px 20px;}
+.brand-mark{width:30px;height:30px;border-radius:9px;background:var(--primary);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:14px;}
+.brand-name{font-weight:800;font-size:17px;letter-spacing:-.02em;}
+.nav-label{font-size:11px;color:var(--text-2);font-weight:600;padding:14px 10px 6px;}
+.nav-item{
+  display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;
+  color:var(--text-2);font-size:14px;font-weight:500;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item svg{flex-shrink:0;width:18px;height:18px;}
+.nav-item:hover{background:var(--surface-2);color:var(--text);}
+.nav-item.active{background:rgba(var(--primary-rgb),.1);color:var(--primary);}
+.sidebar-footer{margin-top:auto;display:flex;flex-direction:column;gap:2px;}
+.profile-row{display:flex;align-items:center;gap:10px;padding:10px;border-top:1px solid var(--border);margin-top:8px;}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;}
+.profile-name{font-size:13px;font-weight:600;}
+.collapse-btn{position:absolute;top:20px;right:-12px;width:24px;height:24px;border-radius:50%;background:var(--surface);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-2);}
+
+.main{flex:1;min-width:0;padding:26px 32px 100px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;}
+.searchbar{flex:1;max-width:420px;display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:9px 14px;color:var(--text-2);cursor:pointer;}
+.searchbar kbd{margin-left:auto;font-size:11px;border:1px solid var(--border);border-radius:4px;padding:1px 6px;}
+.hamburger,.mobile-only{display:none;}
+
+h1{font-size:26px;font-weight:800;letter-spacing:-.02em;margin:0 0 4px;}
+h2{font-size:19px;font-weight:700;margin:0;}
+.subtitle{color:var(--text-2);font-size:14px;margin:0 0 22px;}
+.section{margin-bottom:34px;}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;}
+.link-more{font-size:13px;color:var(--primary);font-weight:600;cursor:pointer;background:none;border:none;}
+
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text);}
+.btn:hover{background:var(--surface-2);}
+.btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-hover);}
+.btn-sm{padding:6px 11px;font-size:12.5px;}
+.btn-danger{color:var(--error);border-color:var(--error);}
+.btn-icon{width:34px;height:34px;padding:0;justify-content:center;border-radius:var(--radius-sm);}
+
+.today-card{background:linear-gradient(135deg,rgba(var(--primary-rgb),.09),rgba(var(--primary-rgb),.02));border:1px solid rgba(var(--primary-rgb),.18);border-radius:var(--radius);padding:20px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.today-card .code{font-size:12px;font-weight:700;color:var(--primary);letter-spacing:.02em;}
+.today-card .name{font-size:17px;font-weight:700;margin-top:2px;}
+.today-card .meta{font-size:13px;color:var(--text-2);margin-top:4px;}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);transition:transform .15s ease, box-shadow .15s ease;position:relative;}
+.card:hover{transform:translateY(-2px);}
+.class-card{cursor:pointer;}
+.class-card .bar{height:5px;border-radius:5px;margin-bottom:12px;}
+.class-card .code{font-size:11.5px;font-weight:700;color:var(--primary);letter-spacing:.02em;}
+.class-card .name{font-size:15px;font-weight:700;margin:5px 0 3px;line-height:1.3;}
+.class-card .teacher{font-size:12.5px;color:var(--text-2);}
+.class-card .stats{display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:12px;color:var(--text-2);}
+.progress-track{height:6px;background:var(--surface-2);border-radius:4px;overflow:hidden;margin-top:10px;}
+.progress-fill{height:100%;background:var(--primary);border-radius:4px;transition:width .4s ease;}
+.card-menu-btn{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--text-2);cursor:pointer;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.card-menu-btn:hover{background:var(--surface-2);}
+.fav-star{position:absolute;top:12px;right:44px;cursor:pointer;color:var(--text-2);background:none;border:none;width:26px;height:26px;}
+.fav-star.on{color:#F59E0B;}
+
+.note-card{cursor:pointer;}
+.note-card .title{font-weight:700;font-size:14.5px;margin-bottom:4px;}
+.note-card .preview{font-size:12.5px;color:var(--text-2);line-height:1.5;max-height:54px;overflow:hidden;}
+.note-card .footer{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:11.5px;color:var(--text-2);}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tag{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--surface-2);color:var(--text-2);}
+
+.empty{text-align:center;padding:50px 20px;color:var(--text-2);border:1px dashed var(--border);border-radius:var(--radius);}
+.empty svg{margin-bottom:10px;opacity:.5;}
+.empty p{margin:4px 0 16px;font-size:13.5px;}
+
+.controls-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;}
+.controls-row input[type=text],.controls-row select{padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-size:13px;}
+.chip{padding:6px 13px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12.5px;cursor:pointer;font-weight:600;color:var(--text-2);}
+.chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+/* class detail */
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text-2);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:14px;background:none;border:none;}
+.detail-head{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:20px;}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:18px;}
+.tab{padding:9px 4px;margin-right:20px;font-size:13.5px;font-weight:600;color:var(--text-2);cursor:pointer;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;}
+.tab.active{color:var(--primary);border-color:var(--primary);}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-bottom:20px;}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;}
+.stat-box .num{font-size:22px;font-weight:800;}
+.stat-box .lbl{font-size:12px;color:var(--text-2);}
+
+/* editor */
+.editor-wrap{max-width:760px;margin:0 auto;}
+.editor-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.save-status{font-size:12px;color:var(--text-2);}
+.title-input{width:100%;font-size:26px;font-weight:800;border:none;background:none;outline:none;padding:4px 0;margin-bottom:6px;}
+.meta-row{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+.meta-row select,.tag-input{border:1px solid var(--border);background:var(--surface);border-radius:var(--radius-sm);padding:6px 10px;font-size:12.5px;}
+.toolbar{display:flex;flex-wrap:wrap;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm) var(--radius-sm) 0 0;padding:6px;position:sticky;top:0;z-index:5;}
+.tb-btn{width:30px;height:30px;border:none;background:none;border-radius:6px;cursor:pointer;color:var(--text-2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+.tb-btn:hover{background:var(--surface-2);color:var(--text);}
+.tb-sep{width:1px;background:var(--border);margin:4px 4px;}
+.note-body{min-height:280px;border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);padding:20px;font-family:var(--font-note);font-size:15px;line-height:1.75;background:var(--surface);outline:none;}
+.note-body h1{font-size:22px;} .note-body h2{font-size:19px;} .note-body h3{font-size:16px;}
+.note-body blockquote{border-left:3px solid var(--primary);margin:0;padding-left:14px;color:var(--text-2);}
+.scripture-block{background:rgba(var(--primary-rgb),.06);border:1px solid rgba(var(--primary-rgb),.2);border-radius:var(--radius-sm);padding:12px 16px;margin:12px 0;}
+.scripture-block .ref{font-weight:700;color:var(--primary);font-size:13px;}
+.structured-sections{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+.sec-chip{font-size:12px;padding:5px 11px;border-radius:999px;border:1px dashed var(--border);background:none;cursor:pointer;color:var(--text-2);font-weight:600;}
+.sec-chip.added{border-style:solid;color:var(--primary);border-color:var(--primary);background:rgba(var(--primary-rgb),.06);}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(15,17,23,.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;opacity:0;pointer-events:none;transition:opacity .18s ease;}
+.overlay.open{opacity:1;pointer-events:auto;}
+.modal{background:var(--surface);border-radius:var(--radius);width:100%;max-width:480px;max-height:88vh;overflow-y:auto;padding:22px;transform:translateY(6px) scale(.98);transition:transform .18s ease;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+.overlay.open .modal{transform:translateY(0) scale(1);}
+.modal h3{margin:0 0 16px;font-size:17px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:5px;}
+.field input,.field textarea,.field select{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);font-size:13.5px;}
+.field textarea{resize:vertical;min-height:70px;}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+.swatches{display:flex;gap:8px;}
+.swatch{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;}
+.swatch.sel{border-color:var(--text);}
+
+/* search modal */
+.search-modal{max-width:560px;padding:0;}
+.search-input-row{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);}
+.search-input-row input{flex:1;border:none;background:none;font-size:15px;outline:none;}
+.search-results{max-height:400px;overflow-y:auto;padding:8px;}
+.search-group-label{font-size:11px;font-weight:700;color:var(--text-2);padding:10px 10px 4px;}
+.search-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius-sm);cursor:pointer;font-size:13.5px;}
+.search-item:hover{background:var(--surface-2);}
+.search-item .sub{color:var(--text-2);font-size:12px;margin-left:auto;}
+
+/* toast */
+.toast-wrap{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;}
+.toast{background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:toastIn .2s ease;}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* settings */
+.settings-layout{display:flex;gap:28px;flex-wrap:wrap;}
+.settings-nav{display:flex;flex-direction:column;gap:2px;min-width:160px;}
+.settings-nav button{text-align:left;padding:8px 10px;border-radius:var(--radius-sm);border:none;background:none;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--text-2);}
+.settings-nav button.active{background:var(--surface-2);color:var(--text);}
+.settings-panel{flex:1;min-width:260px;max-width:520px;}
+.settings-group{margin-bottom:26px;}
+.settings-group h3{font-size:14px;margin-bottom:12px;}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border);gap:14px;}
+.setting-row .lbl{font-size:13.5px;font-weight:600;}
+.setting-row .desc{font-size:12px;color:var(--text-2);margin-top:2px;}
+.switch{position:relative;width:38px;height:22px;border-radius:99px;background:var(--border);cursor:pointer;flex-shrink:0;}
+.switch.on{background:var(--primary);}
+.switch::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .15s ease;}
+.switch.on::after{left:19px;}
+.seg{display:flex;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.seg button{padding:6px 12px;border:none;background:var(--surface);font-size:12.5px;font-weight:600;cursor:pointer;color:var(--text-2);}
+.seg button.active{background:var(--primary);color:#fff;}
+
+/* task */
+.task-row{display:flex;align-items:center;gap:12px;padding:11px 4px;border-bottom:1px solid var(--border);}
+.task-check{width:19px;height:19px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.task-check.done{background:var(--success);border-color:var(--success);color:#fff;}
+.task-row.done .task-title{text-decoration:line-through;color:var(--text-2);}
+.task-title{font-size:13.5px;font-weight:600;flex:1;}
+.task-meta{font-size:11.5px;color:var(--text-2);}
+.pri{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;}
+.pri-low{background:rgba(22,163,74,.12);color:var(--success);}
+.pri-medium{background:rgba(217,119,6,.12);color:var(--warning);}
+.pri-high{background:rgba(220,38,38,.12);color:var(--error);}
+
+/* mobile */
+@media (max-width:880px){
+  .sidebar{display:none;}
+  .main{padding:16px 16px 90px;}
+  .hamburger{display:flex;}
+  .mobile-only{display:flex;}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);display:flex;justify-content:space-around;padding:8px 4px calc(8px + env(safe-area-inset-bottom));z-index:50;}
+  .bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10.5px;color:var(--text-2);background:none;border:none;font-weight:600;min-width:44px;min-height:44px;justify-content:center;cursor:pointer;}
+  .bn-item.active{color:var(--primary);}
+  .bn-item.add{color:var(--primary);}
+  .drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s;}
+  .drawer-overlay.open{opacity:1;pointer-events:auto;}
+  .drawer{position:fixed;top:0;left:0;bottom:0;width:78%;max-width:280px;background:var(--surface);z-index:90;padding:20px 14px;transform:translateX(-100%);transition:transform .22s ease;}
+  .drawer.open{transform:translateX(0);}
+  .today-card{flex-direction:column;align-items:flex-start;}
+}
+@media (min-width:881px){.drawer,.drawer-overlay{display:none;}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <button class="collapse-btn" id="collapseBtn" aria-label="Collapse sidebar">‹</button>
+    <div class="brand">
+      <div class="brand-mark" id="brandMark">S</div>
+      <div class="brand-name" id="brandName">StudySpace</div>
+    </div>
+    <nav id="navMain"></nav>
+    <div class="sidebar-footer">
+      <div class="profile-row">
+        <div class="avatar">AC</div>
+        <div class="profile-name">Amar</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MOBILE DRAWER -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="brand"><div class="brand-mark">S</div><div class="brand-name" id="brandNameDrawer">StudySpace</div></div>
+    <nav id="navDrawer"></nav>
+  </div>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <button class="hamburger btn-icon btn" id="hamburgerBtn" aria-label="Menu">☰</button>
+      <div class="searchbar" id="searchTrigger">
+        <span>🔍</span><span>Search notes, classes, topics…</span><kbd>Ctrl K</kbd>
+      </div>
+      <button class="btn btn-icon" id="themeToggleBtn" title="Toggle theme">🌙</button>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="bottom-nav mobile-only">
+  <button class="bn-item" data-view="dashboard"><span>🏠</span>Home</button>
+  <button class="bn-item" data-view="classes"><span>📚</span>Classes</button>
+  <button class="bn-item add" id="quickAddBtn"><span>➕</span>Add</button>
+  <button class="bn-item" data-view="notes"><span>📝</span>Notes</button>
+  <button class="bn-item" data-view="settings"><span>⚙️</span>Settings</button>
+</div>
+
+<!-- GENERIC OVERLAY / MODAL -->
+<div class="overlay" id="overlay"><div class="modal" id="modalBody"></div></div>
+<!-- SEARCH OVERLAY -->
+<div class="overlay" id="searchOverlay">
+  <div class="modal search-modal">
+    <div class="search-input-row"><span>🔍</span><input type="text" id="searchInput" placeholder="Search everything…"></div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+</div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ DATA LAYER ============ */
+const DB_KEY = "studyspace_db_v1";
+const uid = ()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+
+function defaultData(){
+  const classSeed = [
+    ["BC-215","The Kingdom of God and Kingdom Building","KoG&KB","Paul Emmanuel","#4F46E5"],
+    ["BC-212","Christian Apologetics","CA","Nancy Ramya","#0D9488"],
+    ["BC-206","Ministry of the Evangelist, Pastor & Teacher","MEP&T","Paul Emmanuel","#D97706"],
+    ["BC-205","Keys to Supernatural Ministry","KSM","Nancy Ramya","#7C3AED"],
+    ["BC-204","Biblical Preaching (Homiletics)","BP","Jeyakumar Isaiah","#DC2626"],
+    ["BC-203","The Local Church","TLC","Sam Daniel Mathews","#16A34A"],
+    ["BC-202","Christian Marriage & Family","CM&F","Ashish Raichur","#DB2777"],
+    ["BC-201","Christian History & Missions","CH&M","Selina Macwana","#2563EB"],
+  ];
+  const classes = classSeed.map(([code,name,short,teacher,color])=>({
+    id: uid(), code, name, short_name: short, description:"", teacher,
+    semester:"Fall 2026", academic_year:"2026–27", organization:"APC Admin",
+    color, icon:"📖", is_archived:false, is_favorite:false, created_at:Date.now()
+  }));
+  const notes = [];
+  const sampleFor = (classId, title, tagList) => notes.push({
+    id: uid(), class_id: classId, title, tags: tagList, is_favorite:false,
+    sections: {learned:"This is a sample note — replace it with your own study notes.",
+      understanding:"", questions:"", scriptures:[], points:"", application:"", further:""},
+    body: "<p>This is a sample note — replace it with your own study notes.</p>",
+    created_at: Date.now(), updated_at: Date.now(), sample:true
+  });
+  sampleFor(classes[4].id, "Introduction to Biblical Preaching", ["Preaching","Homiletics"]);
+  sampleFor(classes[0].id, "What is the Kingdom of God?", ["Kingdom","Theology"]);
+  sampleFor(classes[1].id, "Answering objections to faith", ["Apologetics"]);
+  return {
+    classes, notes,
+    tags: ["Theology","Preaching","Leadership","Evangelism","Missions","Church","Family","Apologetics","Holy Spirit","Kingdom","Revival","Bible Study"],
+    resources: [], tasks: [], recent: [], favorites: [],
+    settings: {
+      name:"Amar", classroom_name:"StudySpace", subtitle:"Learn • Understand • Remember • Apply",
+      college:"Bible College", academic_year:"2026–27",
+      theme:"system", accent:"indigo", density:"comfortable", font:"Inter",
+      autosave:true, daily_goal:60, sidebar_collapsed:false
+    }
+  };
+}
+
+let DB = load();
+function load(){
+  try{ const raw = localStorage.getItem(DB_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  const d = defaultData(); save(d); return d;
+}
+function save(d){ try{ localStorage.setItem(DB_KEY, JSON.stringify(d||DB)); }catch(e){} }
+function persist(){ save(DB); }
+
+/* ============ TOAST ============ */
+function toast(msg){
+  const wrap = document.getElementById("toastWrap");
+  const t = document.createElement("div"); t.className="toast"; t.textContent=msg;
+  wrap.appendChild(t); setTimeout(()=>t.remove(), 2200);
+}
+
+/* ============ THEME / SETTINGS APPLY ============ */
+function applySettings(){
+  const s = DB.settings;
+  const root = document.documentElement;
+  let theme = s.theme;
+  if(theme==="system") theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark":"light";
+  root.setAttribute("data-theme", theme);
+  root.setAttribute("data-accent", accentKey(s.accent));
+  root.setAttribute("data-density", s.density);
+  document.getElementById("themeToggleBtn").textContent = theme==="dark" ? "☀️" : "🌙";
+  document.getElementById("brandName").textContent = s.classroom_name;
+  document.getElementById("brandNameDrawer").textContent = s.classroom_name;
+  document.getElementById("brandMark").textContent = s.classroom_name.trim().charAt(0).toUpperCase() || "S";
+  document.getElementById("sidebar").classList.toggle("collapsed", !!s.sidebar_collapsed);
+  document.documentElement.style.setProperty("--font-note", s.font==="Merriweather" ? "'Merriweather',serif" : s.font==="Georgia" ? "Georgia,serif" : s.font==="Source Serif" ? "'Source Serif 4',serif" : "'Inter',sans-serif");
+}
+function accentKey(v){ return v==="indigo" ? "" : v; }
+
+/* ============ NAV ============ */
+const NAV = [
+  {id:"dashboard", icon:"🏠", label:"Dashboard"},
+  {id:"classes", icon:"📚", label:"My Classes"},
+  {id:"notes", icon:"📝", label:"All Notes"},
+  {id:"planner", icon:"📅", label:"Study Planner"},
+  {id:"resources", icon:"📁", label:"Resources"},
+  {id:"favorites", icon:"⭐", label:"Favorites"},
+  {id:"recent", icon:"🕘", label:"Recent"},
+  {id:"__sep1", label:"Insights"},
+  {id:"progress", icon:"📊", label:"Progress"},
+  {id:"__sep2", label:""},
+  {id:"settings", icon:"⚙️", label:"Settings"},
+];
+let state = { view:"dashboard", classId:null, noteId:null, tab:"overview", searchQ:"" };
+
+function renderNav(){
+  [["navMain",document.getElementById("navMain")], ["navDrawer",document.getElementById("navDrawer")]].forEach(([key, el])=>{
+    el.innerHTML = "";
+    NAV.forEach(item=>{
+      if(item.id.startsWith("__sep")){
+        if(item.label) { const l=document.createElement("div"); l.className="nav-label"; l.textContent=item.label; el.appendChild(l); }
+        return;
+      }
+      const b = document.createElement("button");
+      b.className = "nav-item" + (state.view===item.id ? " active":"");
+      b.innerHTML = `<span>${item.icon}</span><span>${item.label}</span>`;
+      b.onclick = ()=>{ go(item.id); closeDrawer(); };
+      el.appendChild(b);
+    });
+  });
+}
+
+function go(view, opts){
+  state.view = view;
+  if(opts) Object.assign(state, opts);
+  render();
+  window.scrollTo(0,0);
+}
+
+/* ============ HELPERS ============ */
+function getClass(id){ return DB.classes.find(c=>c.id===id); }
+function classNotes(id){ return DB.notes.filter(n=>n.class_id===id); }
+function fmtDate(ts){ return new Date(ts).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}); }
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<60) return "just now";
+  if(s<3600) return Math.floor(s/60)+"m ago";
+  if(s<86400) return Math.floor(s/3600)+"h ago";
+  return Math.floor(s/86400)+"d ago";
+}
+function noteExcerpt(n){
+  const div = document.createElement("div"); div.innerHTML = n.body || "";
+  return (div.textContent||"").slice(0,110);
+}
+function classProgress(c){
+  const tasks = DB.tasks.filter(t=>t.class_id===c.id);
+  if(!tasks.length) return c._demoProgress ?? (c._demoProgress = Math.floor(30+Math.random()*55));
+  const done = tasks.filter(t=>t.completed).length;
+  return Math.round((done/tasks.length)*100);
+}
+function trackRecent(type,id){
+  DB.recent = DB.recent.filter(r=>!(r.type===type && r.id===id));
+  DB.recent.unshift({type,id,ts:Date.now()});
+  DB.recent = DB.recent.slice(0,50);
+  persist();
+}
+function isFav(type,id){ return DB.favorites.some(f=>f.type===type && f.id===id); }
+function toggleFav(type,id){
+  if(isFav(type,id)) DB.favorites = DB.favorites.filter(f=>!(f.type===type&&f.id===id));
+  else DB.favorites.push({type,id});
+  persist();
+}
+
+/* ============ RENDER ROOT ============ */
+function render(){
+  renderNav();
+  const el = document.getElementById("view");
+  el.innerHTML = "";
+  const map = {
+    dashboard: renderDashboard, classes: renderClasses, classDetail: renderClassDetail,
+    notes: renderAllNotes, noteEditor: renderNoteEditor, planner: renderPlanner,
+    resources: renderResources, favorites: renderFavorites, recent: renderRecent,
+    progress: renderProgress, settings: renderSettings
+  };
+  (map[state.view] || renderDashboard)(el);
+  persist();
+}
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(el){
+  const hour = new Date().getHours();
+  const greet = hour<12?"Good morning":hour<18?"Good afternoon":"Good evening";
+  const recentNote = DB.recent.find(r=>r.type==="note") ;
+  const rn = recentNote ? DB.notes.find(n=>n.id===recentNote.id) : DB.notes[0];
+  const rc = rn ? getClass(rn.class_id) : null;
+
+  el.innerHTML = `
+    <h1>${greet}, ${esc(DB.settings.name)} 👋</h1>
+    <p class="subtitle">Ready to continue learning? Today is ${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})}.</p>
+
+    ${rn ? `<div class="section">
+      <div class="section-head"><h2>Today's study</h2></div>
+      <div class="today-card" id="todayCard" style="cursor:pointer">
+        <div><div class="code">${rc?esc(rc.code):''}</div><div class="name">${esc(rn.title)}</div>
+        <div class="meta">${rc?esc(rc.name):''}</div></div>
+        <button class="btn btn-primary">Continue studying →</button>
+      </div>
+    </div>` : ''}
+
+    <div class="section">
+      <div class="section-head"><h2>My classes</h2><button class="link-more" id="seeAllClasses">See all</button></div>
+      <div class="grid" id="dashClasses"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Recently studied</h2></div>
+      <div class="grid" id="dashRecent"></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h2>Quick actions</h2></div>
+      <div class="controls-row">
+        <button class="btn btn-primary" id="qaNote">+ New Note</button>
+        <button class="btn" id="qaClass">+ New Class</button>
+        <button class="btn" id="qaTask">+ Study Task</button>
+        <button class="btn" id="qaSearch">🔍 Search</button>
+      </div>
+    </div>
+  `;
+  if(rn) el.querySelector("#todayCard").onclick = ()=>openNote(rn.id);
+  el.querySelector("#seeAllClasses").onclick = ()=>go("classes");
+  el.querySelector("#qaNote").onclick = ()=>createNote();
+  el.querySelector("#qaClass").onclick = ()=>openClassModal();
+  el.querySelector("#qaTask").onclick = ()=>openTaskModal();
+  el.querySelector("#qaSearch").onclick = openSearch;
+
+  const dc = el.querySelector("#dashClasses");
+  DB.classes.filter(c=>!c.is_archived).slice(0,4).forEach(c=>dc.appendChild(classCard(c)));
+
+  const dr = el.querySelector("#dashRecent");
+  const recentNotes = DB.recent.filter(r=>r.type==="note").map(r=>DB.notes.find(n=>n.id===r.id)).filter(Boolean).slice(0,4);
+  if(!recentNotes.length){ dr.innerHTML = emptyState("No activity yet","Open a class and create your first note to see it here."); }
+  else recentNotes.forEach(n=>dr.appendChild(noteCard(n)));
+}
+
+/* ============ CLASS CARD ============ */
+function classCard(c){
+  const div = document.createElement("div");
+  div.className = "card class-card";
+  const notes = classNotes(c.id);
+  const prog = classProgress(c);
+  div.innerHTML = `
+    <div class="bar" style="background:${c.color}"></div>
+    <button class="fav-star ${c.is_favorite?'on':''}" title="Favorite">★</button>
+    <button class="card-menu-btn" title="More">⋮</button>
+    <div class="code">${esc(c.code)}</div>
+    <div class="name">${esc(c.name)}</div>
+    <div class="teacher">${esc(c.teacher)} · ${esc(c.semester)}</div>
+    <div class="progress-track"><div class="progress-fill" style="width:${prog}%;background:${c.color}"></div></div>
+    <div class="stats"><span>${notes.length} note${notes.length===1?'':'s'}</span><span>${prog}% complete</span></div>
+  `;
+  div.onclick = (e)=>{ if(e.target.closest('.fav-star')||e.target.closest('.card-menu-btn')) return; openClass(c.id); };
+  div.querySelector(".fav-star").onclick = (e)=>{ e.stopPropagation(); c.is_favorite=!c.is_favorite; persist(); render(); };
+  div.querySelector(".card-menu-btn").onclick = (e)=>{ e.stopPropagation(); classContextMenu(c, e.currentTarget); };
+  return div;
+}
+
+function classContextMenu(c, anchor){
+  openModal(`
+    <h3>${esc(c.code)}</h3>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="btn" style="justify-content:flex-start" id="m-open">Open</button>
+      <button class="btn" style="justify-content:flex-start" id="m-edit">Edit class</button>
+      <button class="btn" style="justify-content:flex-start" id="m-fav">${c.is_favorite?'Remove favorite':'Add to favorites'}</button>
+      <button class="btn" style="justify-content:flex-start" id="m-archive">${c.is_archived?'Restore':'Archive class'}</button>
+      <button class="btn btn-danger" style="justify-content:flex-start" id="m-del">Delete class</button>
+    </div>
+  `);
+  byId("m-open").onclick = ()=>{ closeModal(); openClass(c.id); };
+  byId("m-edit").onclick = ()=>{ closeModal(); openClassModal(c); };
+  byId("m-fav").onclick = ()=>{ c.is_favorite=!c.is_favorite; persist(); closeModal(); render(); };
+  byId("m-archive").onclick = ()=>{ c.is_archived=!c.is_archived; persist(); closeModal(); toast(c.is_archived?"Class archived":"Class restored"); render(); };
+  byId("m-del").onclick = ()=>{
+    confirmDialog(`Delete ${c.code}?`, "This will permanently delete the class and all its notes.", ()=>{
+      DB.classes = DB.classes.filter(x=>x.id!==c.id);
+      DB.notes = DB.notes.filter(n=>n.class_id!==c.id);
+      persist(); closeModal(); toast("Class deleted"); go("classes");
+    });
+  };
+}
+
+/* ============ NOTE CARD ============ */
+function noteCard(n){
+  const c = getClass(n.class_id);
+  const div = document.createElement("div");
+  div.className = "card note-card";
+  div.innerHTML = `
+    <button class="fav-star ${n.is_favorite?'on':''}" title="Favorite">★</button>
+    <button class="card-menu-btn" title="More">⋮</button>
+    <div class="title">${esc(n.title||'Untitled note')}</div>
+    <div class="preview">${esc(noteExcerpt(n))||'No content yet.'}</div>
+    <div class="tags">${(n.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+    <div class="footer"><span>${c?esc(c.code):''}</span><span>${timeAgo(n.updated_at)}</span></div>
+  `;
+  div.onclick = (e)=>{ if(e.target.closest('.fav-star')||e.target.closest('.card-menu-btn')) return; openNote(n.id); };
+  div.querySelector(".fav-star").onclick = (e)=>{ e.stopPropagation(); n.is_favorite=!n.is_favorite; persist(); render(); };
+  div.querySelector(".card-menu-btn").onclick = (e)=>{ e.stopPropagation(); noteContextMenu(n); };
+  return div;
+}
+function noteContextMenu(n){
+  openModal(`
+    <h3>${esc(n.title||'Untitled note')}</h3>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <button class="btn" style="justify-content:flex-start" id="m-open">Open</button>
+      <button class="btn" style="justify-content:flex-start" id="m-dup">Duplicate</button>
+      <button class="btn" style="justify-content:flex-start" id="m-fav">${n.is_favorite?'Remove favorite':'Add to favorites'}</button>
+      <button class="btn btn-danger" style="justify-content:flex-start" id="m-del">Delete note</button>
+    </div>
+  `);
+  byId("m-open").onclick = ()=>{ closeModal(); openNote(n.id); };
+  byId("m-dup").onclick = ()=>{
+    const copy = JSON.parse(JSON.stringify(n)); copy.id=uid(); copy.title = n.title + " (copy)";
+    copy.created_at = copy.updated_at = Date.now(); copy.sample=false;
+    DB.notes.push(copy); persist(); closeModal(); toast("Note duplicated"); render();
+  };
+  byId("m-fav").onclick = ()=>{ n.is_favorite=!n.is_favorite; persist(); closeModal(); render(); };
+  byId("m-del").onclick = ()=>{
+    confirmDialog("Delete this note?","This action cannot be undone.", ()=>{
+      DB.notes = DB.notes.filter(x=>x.id!==n.id); persist(); closeModal(); toast("Note deleted"); render();
+    });
+  };
+}
+
+/* ============ CLASSES PAGE ============ */
+function renderClasses(el){
+  el.innerHTML = `
+    <h1>My Classes</h1>
+    <p class="subtitle">All your subjects in one place.</p>
+    <div class="controls-row">
+      <input type="text" id="classSearch" placeholder="Search classes…">
+      <div class="chip active" data-f="all">All</div>
+      <div class="chip" data-f="favorites">Favorites</div>
+      <div class="chip" data-f="archived">Archived</div>
+      <button class="btn btn-primary" style="margin-left:auto" id="newClassBtn">+ New Class</button>
+    </div>
+    <div class="grid" id="classGrid"></div>
+  `;
+  let filter = "all", q = "";
+  function refresh(){
+    let list = DB.classes.slice();
+    if(filter==="favorites") list = list.filter(c=>c.is_favorite && !c.is_archived);
+    else if(filter==="archived") list = list.filter(c=>c.is_archived);
+    else list = list.filter(c=>!c.is_archived);
+    if(q) list = list.filter(c=> (c.name+c.code+c.teacher).toLowerCase().includes(q.toLowerCase()));
+    const grid = el.querySelector("#classGrid"); grid.innerHTML = "";
+    if(!list.length){ grid.innerHTML = emptyState("No classes found","Try a different filter or create a new class."); return; }
+    list.forEach(c=>grid.appendChild(classCard(c)));
+  }
+  el.querySelectorAll(".chip").forEach(ch=>ch.onclick = ()=>{
+    el.querySelectorAll(".chip").forEach(c=>c.classList.remove("active")); ch.classList.add("active");
+    filter = ch.dataset.f; refresh();
+  });
+  el.querySelector("#classSearch").oninput = (e)=>{ q=e.target.value; refresh(); };
+  el.querySelector("#newClassBtn").onclick = ()=>openClassModal();
+  refresh();
+}
+
+function openClassModal(existing){
+  const c = existing || {};
+  const colors = ["#4F46E5","#0D9488","#D97706","#7C3AED","#DC2626","#16A34A","#DB2777","#2563EB"];
+  openModal(`
+    <h3>${existing?'Edit class':'Create new class'}</h3>
+    <div class="field"><label>Class code</label><input id="f-code" value="${esc(c.code||'')}" placeholder="BC-101"></div>
+    <div class="field"><label>Class name *</label><input id="f-name" value="${esc(c.name||'')}" placeholder="e.g. Old Testament Survey"></div>
+    <div class="field"><label>Short name</label><input id="f-short" value="${esc(c.short_name||'')}"></div>
+    <div class="field"><label>Teacher</label><input id="f-teacher" value="${esc(c.teacher||'')}"></div>
+    <div class="field"><label>Semester</label><input id="f-semester" value="${esc(c.semester||'Fall 2026')}"></div>
+    <div class="field"><label>Description</label><textarea id="f-desc">${esc(c.description||'')}</textarea></div>
+    <div class="field"><label>Colour</label><div class="swatches">${colors.map(col=>`<span class="swatch ${col===(c.color||colors[0])?'sel':''}" data-c="${col}" style="background:${col}"></span>`).join('')}</div></div>
+    <div class="modal-actions"><button class="btn" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">${existing?'Save changes':'Create class'}</button></div>
+  `);
+  let chosenColor = c.color || colors[0];
+  document.querySelectorAll(".swatch").forEach(s=>s.onclick=()=>{ document.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel")); s.classList.add("sel"); chosenColor=s.dataset.c; });
+  byId("cancelBtn").onclick = closeModal;
+  byId("saveBtn").onclick = ()=>{
+    const name = byId("f-name").value.trim();
+    if(!name){ toast("Class name is required."); return; }
+    if(existing){
+      Object.assign(c,{code:byId("f-code").value, name, short_name:byId("f-short").value, teacher:byId("f-teacher").value, semester:byId("f-semester").value, description:byId("f-desc").value, color:chosenColor});
+      toast("Class updated");
+    } else {
+      DB.classes.push({ id:uid(), code:byId("f-code").value||"NEW", name, short_name:byId("f-short").value,
+        teacher:byId("f-teacher").value, semester:byId("f-semester").value, academic_year:DB.settings.academic_year,
+        organization:"", description:byId("f-desc").value, color:chosenColor, icon:"📖", is_archived:false, is_favorite:false, created_at:Date.now() });
+      toast("Class created");
+    }
+    persist(); closeModal(); render();
+  };
+}
+
+/* ============ CLASS DETAIL ============ */
+function openClass(id){ trackRecent("class", id); go("classDetail", {classId:id, tab:"overview"}); }
+function renderClassDetail(el){
+  const c = getClass(state.classId);
+  if(!c){ el.innerHTML = emptyState("Class not found","It may have been deleted."); return; }
+  const notes = classNotes(c.id);
+  const prog = classProgress(c);
+  el.innerHTML = `
+    <button class="back-link">← Back to Classes</button>
+    <div class="detail-head">
+      <div><div class="code" style="color:${c.color};font-weight:700;font-size:12.5px">${esc(c.code)}</div>
+      <h1 style="margin-top:4px">${esc(c.name)}</h1>
+      <p class="subtitle" style="margin-bottom:0">${esc(c.semester)} · ${esc(c.teacher)}</p></div>
+      <div style="display:flex;gap:8px"><button class="btn" id="addResBtn">+ Add Resource</button><button class="btn btn-primary" id="addNoteBtn">+ New Note</button></div>
+    </div>
+    <div class="tabs">
+      <button class="tab ${state.tab==='overview'?'active':''}" data-t="overview">Overview</button>
+      <button class="tab ${state.tab==='notes'?'active':''}" data-t="notes">Notes (${notes.length})</button>
+      <button class="tab ${state.tab==='resources'?'active':''}" data-t="resources">Resources</button>
+      <button class="tab ${state.tab==='planner'?'active':''}" data-t="planner">Planner</button>
+    </div>
+    <div id="tabBody"></div>
+  `;
+  el.querySelector(".back-link").onclick = ()=>go("classes");
+  el.querySelector("#addNoteBtn").onclick = ()=>createNote(c.id);
+  el.querySelector("#addResBtn").onclick = ()=>openResourceModal(c.id);
+  el.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{ state.tab=t.dataset.t; render(); });
+
+  const body = el.querySelector("#tabBody");
+  if(state.tab==="overview"){
+    body.innerHTML = `
+      <div class="stat-row">
+        <div class="stat-box"><div class="num">${prog}%</div><div class="lbl">Progress</div></div>
+        <div class="stat-box"><div class="num">${notes.length}</div><div class="lbl">Notes</div></div>
+        <div class="stat-box"><div class="num">${DB.resources.filter(r=>r.class_id===c.id).length}</div><div class="lbl">Resources</div></div>
+        <div class="stat-box"><div class="num">${DB.tasks.filter(t=>t.class_id===c.id && !t.completed).length}</div><div class="lbl">Upcoming tasks</div></div>
+      </div>
+      <div class="section-head"><h2>Recently studied</h2></div>
+      <div class="grid" id="ovNotes"></div>
+    `;
+    const g = body.querySelector("#ovNotes");
+    if(!notes.length) g.innerHTML = emptyState("No notes yet", `You haven't created any notes for ${c.code} yet.`, "Create your first note", ()=>createNote(c.id));
+    else notes.slice(0,4).forEach(n=>g.appendChild(noteCard(n)));
+  } else if(state.tab==="notes"){
+    body.innerHTML = `<div class="controls-row"><input type="text" id="noteSearch" placeholder="Search this class…"></div><div class="grid" id="classNoteGrid"></div>`;
+    const grid = body.querySelector("#classNoteGrid");
+    function refresh(q){
+      const list = notes.filter(n=>!q || (n.title+noteExcerpt(n)).toLowerCase().includes(q.toLowerCase()));
+      grid.innerHTML = "";
+      if(!list.length){ grid.innerHTML = emptyState("No notes yet", `You haven't created any notes for ${c.code} yet.`, "Create your first note", ()=>createNote(c.id)); return; }
+      list.forEach(n=>grid.appendChild(noteCard(n)));
+    }
+    body.querySelector("#noteSearch").oninput = (e)=>refresh(e.target.value);
+    refresh("");
+  } else if(state.tab==="resources"){
+    const res = DB.resources.filter(r=>r.class_id===c.id);
+    body.innerHTML = `<div class="grid" id="resGrid"></div>`;
+    const g = body.querySelector("#resGrid");
+    if(!res.length) g.innerHTML = emptyState("No resources yet","Add links, documents, or videos related to this class.", "Add a resource", ()=>openResourceModal(c.id));
+    else res.forEach(r=>g.appendChild(resourceCard(r)));
+  } else if(state.tab==="planner"){
+    body.innerHTML = `<div class="controls-row"><button class="btn btn-primary" id="addTaskBtn2">+ Study Task</button></div><div id="classTasks"></div>`;
+    body.querySelector("#addTaskBtn2").onclick = ()=>openTaskModal(c.id);
+    renderTaskList(body.querySelector("#classTasks"), DB.tasks.filter(t=>t.class_id===c.id));
+  }
+}
+
+/* ============ RESOURCES ============ */
+const RES_ICON = {document:"📄",website:"🔗",video:"🎥",book:"📚",image:"🖼",other:"📝"};
+function resourceCard(r){
+  const div = document.createElement("div"); div.className="card";
+  div.innerHTML = `
+    <button class="fav-star ${r.is_favorite?'on':''}">★</button>
+    <div style="font-size:22px">${RES_ICON[r.type]||"📝"}</div>
+    <div class="title" style="font-weight:700;font-size:14.5px;margin-top:6px">${esc(r.title)}</div>
+    <div class="preview" style="font-size:12.5px;color:var(--text-2)">${esc(r.description||'')}</div>
+    <div class="footer"><span>${fmtDate(r.created_at)}</span></div>
+  `;
+  div.querySelector(".fav-star").onclick=(e)=>{e.stopPropagation(); r.is_favorite=!r.is_favorite; persist(); render();};
+  div.onclick=(e)=>{ if(e.target.closest('.fav-star')) return; if(r.url) window.open(r.url,'_blank'); };
+  return div;
+}
+function renderResources(el){
+  el.innerHTML = `<h1>Resources</h1><p class="subtitle">Your centralized study resource library.</p>
+    <div class="controls-row"><button class="btn btn-primary" id="addRes">+ Add Resource</button></div>
+    <div class="grid" id="resGridAll"></div>`;
+  el.querySelector("#addRes").onclick = ()=>openResourceModal();
+  const g = el.querySelector("#resGridAll");
+  if(!DB.resources.length) g.innerHTML = emptyState("No resources yet","Add links, documents, or videos to build your library.", "Add a resource", ()=>openResourceModal());
+  else DB.resources.forEach(r=>g.appendChild(resourceCard(r)));
+}
+function openResourceModal(classId){
+  openModal(`
+    <h3>Add resource</h3>
+    <div class="field"><label>Title *</label><input id="r-title"></div>
+    <div class="field"><label>Type</label><select id="r-type">${Object.keys(RES_ICON).map(t=>`<option value="${t}">${t}</option>`).join('')}</select></div>
+    <div class="field"><label>Class</label><select id="r-class"><option value="">None</option>${DB.classes.map(c=>`<option value="${c.id}" ${classId===c.id?'selected':''}>${esc(c.code)}</option>`).join('')}</select></div>
+    <div class="field"><label>URL</label><input id="r-url" placeholder="https://"></div>
+    <div class="field"><label>Description</label><textarea id="r-desc"></textarea></div>
+    <div class="modal-actions"><button class="btn" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Add</button></div>
+  `);
+  byId("cancelBtn").onclick = closeModal;
+  byId("saveBtn").onclick = ()=>{
+    const title = byId("r-title").value.trim();
+    if(!title){ toast("Title is required."); return; }
+    DB.resources.push({id:uid(), title, type:byId("r-type").value, class_id:byId("r-class").value||null, url:byId("r-url").value, description:byId("r-desc").value, is_favorite:false, created_at:Date.now()});
+    persist(); closeModal(); toast("Resource added"); render();
+  };
+}
+
+/* ============ ALL NOTES ============ */
+function renderAllNotes(el){
+  el.innerHTML = `<h1>All Notes</h1><p class="subtitle">Every note across every class.</p>
+    <div class="controls-row">
+      <input type="text" id="allNoteSearch" placeholder="Search notes…">
+      <select id="classFilter"><option value="">All classes</option>${DB.classes.map(c=>`<option value="${c.id}">${esc(c.code)}</option>`).join('')}</select>
+      <button class="btn btn-primary" style="margin-left:auto" id="newNoteBtn2">+ New Note</button>
+    </div>
+    <div class="grid" id="allNoteGrid"></div>`;
+  el.querySelector("#newNoteBtn2").onclick = ()=>createNote();
+  function refresh(){
+    const q = el.querySelector("#allNoteSearch").value.toLowerCase();
+    const cf = el.querySelector("#classFilter").value;
+    let list = DB.notes.filter(n=> (!cf||n.class_id===cf) && (!q || (n.title+noteExcerpt(n)).toLowerCase().includes(q)));
+    const g = el.querySelector("#allNoteGrid"); g.innerHTML="";
+    if(!list.length){ g.innerHTML = emptyState("No notes found","Create a note to start building your study library.", "+ New Note", ()=>createNote()); return; }
+    list.sort((a,b)=>b.updated_at-a.updated_at).forEach(n=>g.appendChild(noteCard(n)));
+  }
+  el.querySelector("#allNoteSearch").oninput = refresh;
+  el.querySelector("#classFilter").onchange = refresh;
+  refresh();
+}
+
+/* ============ NOTE EDITOR ============ */
+const SECTION_DEFS = [
+  {key:"learned", icon:"📖", label:"What I Learned"},
+  {key:"understanding", icon:"💡", label:"My Understanding"},
+  {key:"questions", icon:"❓", label:"Questions"},
+  {key:"points", icon:"📝", label:"Important Points"},
+  {key:"application", icon:"🙏", label:"Personal Application"},
+  {key:"further", icon:"🔎", label:"Further Study"},
+];
+function createNote(classId){
+  const n = {
+    id: uid(), class_id: classId || (DB.classes[0] && DB.classes[0].id) || null,
+    title:"", tags:[], is_favorite:false, body:"", sections:{}, activeSections:[],
+    scriptures:[], created_at:Date.now(), updated_at:Date.now(), sample:false
+  };
+  DB.notes.push(n); persist();
+  openNote(n.id);
+}
+function openNote(id){ trackRecent("note", id); go("noteEditor", {noteId:id}); }
+
+function renderNoteEditor(el){
+  const n = DB.notes.find(x=>x.id===state.noteId);
+  if(!n){ el.innerHTML = emptyState("Note not found",""); return; }
+  n.activeSections = n.activeSections || [];
+  n.scriptures = n.scriptures || [];
+  el.innerHTML = `
+    <div class="editor-wrap">
+      <div class="editor-top">
+        <button class="back-link" style="margin:0">← Back</button>
+        <span class="save-status" id="saveStatus">Saved</span>
+      </div>
+      <input class="title-input" id="noteTitle" placeholder="Untitled note" value="${esc(n.title)}">
+      <div class="meta-row">
+        <select id="noteClass">${DB.classes.map(c=>`<option value="${c.id}" ${c.id===n.class_id?'selected':''}>${esc(c.code)}</option>`).join('')}</select>
+        <input class="tag-input" id="noteTagInput" placeholder="Add tag + Enter" list="tagList" style="width:150px">
+        <datalist id="tagList">${DB.tags.map(t=>`<option value="${esc(t)}">`).join('')}</datalist>
+        <div class="tags" id="noteTags"></div>
+      </div>
+
+      <div class="structured-sections" id="secChips"></div>
+      <div id="secBlocks"></div>
+
+      <div class="toolbar" id="toolbar">
+        <button class="tb-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+        <button class="tb-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+        <button class="tb-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" data-cmd="formatBlock" data-val="H1" title="Heading 1">H1</button>
+        <button class="tb-btn" data-cmd="formatBlock" data-val="H2" title="Heading 2">H2</button>
+        <button class="tb-btn" data-cmd="formatBlock" data-val="H3" title="Heading 3">H3</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" data-cmd="insertUnorderedList" title="Bullet list">•≡</button>
+        <button class="tb-btn" data-cmd="insertOrderedList" title="Numbered list">1≡</button>
+        <button class="tb-btn" data-cmd="formatBlock" data-val="BLOCKQUOTE" title="Quote">❝</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" id="tb-link" title="Link">🔗</button>
+        <button class="tb-btn" id="tb-scripture" title="Insert Bible verse">📖</button>
+      </div>
+      <div class="note-body" id="noteBody" contenteditable="true">${n.body||''}</div>
+    </div>
+  `;
+  el.querySelector(".back-link").onclick = ()=>{ if(n.class_id) go("classDetail",{classId:n.class_id, tab:"notes"}); else go("notes"); };
+
+  // sections
+  const secChips = el.querySelector("#secChips");
+  function renderSecChips(){
+    secChips.innerHTML = "";
+    SECTION_DEFS.forEach(sd=>{
+      const active = n.activeSections.includes(sd.key);
+      const chip = document.createElement("button");
+      chip.className = "sec-chip" + (active?" added":"");
+      chip.textContent = `${sd.icon} ${sd.label}`;
+      chip.onclick = ()=>{
+        if(active) n.activeSections = n.activeSections.filter(k=>k!==sd.key);
+        else n.activeSections.push(sd.key);
+        renderSecChips(); renderSecBlocks(); scheduleSave();
+      };
+      secChips.appendChild(chip);
+    });
+  }
+  const secBlocks = el.querySelector("#secBlocks");
+  function renderSecBlocks(){
+    secBlocks.innerHTML = "";
+    n.activeSections.forEach(key=>{
+      const sd = SECTION_DEFS.find(s=>s.key===key);
+      const wrap = document.createElement("div");
+      wrap.style.marginBottom = "12px";
+      wrap.innerHTML = `<label style="font-size:12.5px;font-weight:700;color:var(--text-2)">${sd.icon} ${sd.label}</label>
+        <textarea style="width:100%;min-height:60px;margin-top:5px;padding:10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);font-family:var(--font-note);font-size:13.5px" data-key="${key}">${esc(n.sections[key]||'')}</textarea>`;
+      wrap.querySelector("textarea").oninput = (e)=>{ n.sections[key]=e.target.value; scheduleSave(); };
+      secBlocks.appendChild(wrap);
+    });
+    // scripture blocks
+    n.scriptures.forEach((s,i)=>{
+      const b = document.createElement("div");
+      b.className = "scripture-block";
+      b.innerHTML = `<div class="ref">📖 ${esc(s.reference)} ${s.translation?('('+esc(s.translation)+')'):''}</div><div style="margin-top:4px;font-size:13.5px">${esc(s.text)}</div>`;
+      secBlocks.appendChild(b);
+    });
+  }
+  renderSecChips(); renderSecBlocks();
+
+  // tags
+  const tagsEl = el.querySelector("#noteTags");
+  function renderTags(){
+    tagsEl.innerHTML = "";
+    (n.tags||[]).forEach(t=>{
+      const s = document.createElement("span"); s.className="tag"; s.style.cursor="pointer";
+      s.innerHTML = esc(t)+" ✕";
+      s.onclick = ()=>{ n.tags = n.tags.filter(x=>x!==t); renderTags(); scheduleSave(); };
+      tagsEl.appendChild(s);
+    });
+  }
+  renderTags();
+  el.querySelector("#noteTagInput").onkeydown = (e)=>{
+    if(e.key==="Enter" && e.target.value.trim()){
+      const v = e.target.value.trim();
+      n.tags = n.tags||[]; if(!n.tags.includes(v)) n.tags.push(v);
+      if(!DB.tags.includes(v)) DB.tags.push(v);
+      e.target.value=""; renderTags(); scheduleSave();
+    }
+  };
+
+  // save status / autosave
+  let saveTimer;
+  function scheduleSave(){
+    document.getElementById("saveStatus").textContent = "Saving…";
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(()=>{
+      n.updated_at = Date.now();
+      persist();
+      document.getElementById("saveStatus").textContent = "Saved just now";
+    }, 500);
+  }
+  el.querySelector("#noteTitle").oninput = (e)=>{ n.title = e.target.value; scheduleSave(); };
+  el.querySelector("#noteClass").onchange = (e)=>{ n.class_id = e.target.value; scheduleSave(); };
+  const bodyEl = el.querySelector("#noteBody");
+  bodyEl.oninput = ()=>{ n.body = bodyEl.innerHTML; scheduleSave(); };
+
+  el.querySelector("#toolbar").addEventListener("click",(e)=>{
+    const btn = e.target.closest(".tb-btn"); if(!btn) return;
+    if(btn.id==="tb-link"){
+      const url = prompt("Enter URL:"); if(url) document.execCommand("createLink", false, url);
+    } else if(btn.id==="tb-scripture"){
+      openScriptureModal(n, renderSecBlocks, scheduleSave);
+    } else {
+      document.execCommand(btn.dataset.cmd, false, btn.dataset.val||null);
+    }
+    bodyEl.focus();
+    n.body = bodyEl.innerHTML; scheduleSave();
+  });
+}
+function openScriptureModal(n, onDone, scheduleSave){
+  openModal(`
+    <h3>📖 Insert Scripture</h3>
+    <div class="field"><label>Reference</label><input id="s-ref" placeholder="Matthew 28:19"></div>
+    <div class="field"><label>Translation</label><input id="s-trans" placeholder="e.g. NIV, ESV, KJV"></div>
+    <div class="field"><label>Verse text</label><textarea id="s-text" placeholder="Paste the verse text…"></textarea></div>
+    <div class="modal-actions"><button class="btn" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Add verse</button></div>
+  `);
+  byId("cancelBtn").onclick = closeModal;
+  byId("saveBtn").onclick = ()=>{
+    const ref = byId("s-ref").value.trim();
+    if(!ref){ toast("Reference is required."); return; }
+    n.scriptures.push({reference:ref, translation:byId("s-trans").value.trim(), text:byId("s-text").value.trim()});
+    closeModal(); onDone(); scheduleSave();
+  };
+}
+
+/* ============ PLANNER / TASKS ============ */
+function renderPlanner(el){
+  el.innerHTML = `<h1>Study Planner</h1><p class="subtitle">Plan and track your study tasks.</p>
+    <div class="controls-row"><button class="btn btn-primary" id="newTaskBtn">+ Study Task</button></div>
+    <div id="taskList"></div>`;
+  el.querySelector("#newTaskBtn").onclick = ()=>openTaskModal();
+  renderTaskList(el.querySelector("#taskList"), DB.tasks);
+}
+function renderTaskList(container, tasks){
+  if(!tasks.length){ container.innerHTML = emptyState("No study tasks yet","Add a task to build your study plan.", "+ Study Task", ()=>openTaskModal()); return; }
+  const sorted = tasks.slice().sort((a,b)=>(a.completed-b.completed) || ((a.due_date||"")>(b.due_date||"")?1:-1));
+  container.innerHTML = "";
+  sorted.forEach(t=>{
+    const c = getClass(t.class_id);
+    const row = document.createElement("div");
+    row.className = "task-row" + (t.completed?" done":"");
+    row.innerHTML = `
+      <div class="task-check ${t.completed?'done':''}">${t.completed?'✓':''}</div>
+      <div style="flex:1">
+        <div class="task-title">${esc(t.title)}</div>
+        <div class="task-meta">${c?esc(c.code)+' · ':''}${t.due_date?fmtDate(new Date(t.due_date).getTime()):'No date'}</div>
+      </div>
+      <span class="pri pri-${t.priority}">${t.priority}</span>
+      <button class="btn-icon btn" style="border:none;background:none" title="Delete">🗑</button>
+    `;
+    row.querySelector(".task-check").onclick = ()=>{ t.completed=!t.completed; persist(); render(); };
+    row.querySelector("button[title='Delete']").onclick = ()=>{ DB.tasks = DB.tasks.filter(x=>x.id!==t.id); persist(); render(); };
+    container.appendChild(row);
+  });
+}
+function openTaskModal(classId){
+  openModal(`
+    <h3>New study task</h3>
+    <div class="field"><label>Title *</label><input id="t-title"></div>
+    <div class="field"><label>Description</label><textarea id="t-desc"></textarea></div>
+    <div class="field"><label>Class</label><select id="t-class"><option value="">None</option>${DB.classes.map(c=>`<option value="${c.id}" ${classId===c.id?'selected':''}>${esc(c.code)}</option>`).join('')}</select></div>
+    <div class="field"><label>Due date</label><input type="date" id="t-date"></div>
+    <div class="field"><label>Priority</label><select id="t-priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div>
+    <div class="modal-actions"><button class="btn" id="cancelBtn">Cancel</button><button class="btn btn-primary" id="saveBtn">Add task</button></div>
+  `);
+  byId("cancelBtn").onclick = closeModal;
+  byId("saveBtn").onclick = ()=>{
+    const title = byId("t-title").value.trim();
+    if(!title){ toast("Title is required."); return; }
+    DB.tasks.push({id:uid(), title, description:byId("t-desc").value, class_id:byId("t-class").value||null,
+      due_date:byId("t-date").value, priority:byId("t-priority").value, completed:false, created_at:Date.now()});
+    persist(); closeModal(); toast("Task added"); render();
+  };
+}
+
+/* ============ FAVORITES / RECENT ============ */
+function renderFavorites(el){
+  const favClasses = DB.classes.filter(c=>c.is_favorite);
+  const favNotes = DB.notes.filter(n=>n.is_favorite);
+  const favRes = DB.resources.filter(r=>r.is_favorite);
+  el.innerHTML = `<h1>Favorites</h1><p class="subtitle">Quick access to what matters most.</p>`;
+  const sections = [["Favorite classes", favClasses, classCard],["Favorite notes", favNotes, noteCard],["Favorite resources", favRes, resourceCard]];
+  sections.forEach(([label, list, fn])=>{
+    const sec = document.createElement("div"); sec.className="section";
+    sec.innerHTML = `<div class="section-head"><h2>${label}</h2></div>`;
+    const g = document.createElement("div"); g.className="grid";
+    if(!list.length) g.innerHTML = emptyState("Nothing here yet","Star items to see them here.");
+    else list.forEach(item=>g.appendChild(fn(item)));
+    sec.appendChild(g); el.appendChild(sec);
+  });
+}
+function renderRecent(el){
+  el.innerHTML = `<h1>Recent</h1><p class="subtitle">Your last 50 opened items.</p><div id="recentGroups"></div>`;
+  const groups = {Today:[], Yesterday:[], Earlier:[]};
+  const now = new Date(); const todayStr = now.toDateString();
+  const y = new Date(now); y.setDate(y.getDate()-1); const yStr = y.toDateString();
+  DB.recent.forEach(r=>{
+    const d = new Date(r.ts).toDateString();
+    const bucket = d===todayStr ? "Today" : d===yStr ? "Yesterday" : "Earlier";
+    groups[bucket].push(r);
+  });
+  const wrap = el.querySelector("#recentGroups");
+  let any=false;
+  Object.entries(groups).forEach(([label, items])=>{
+    if(!items.length) return; any=true;
+    const sec = document.createElement("div"); sec.className="section";
+    sec.innerHTML = `<div class="section-head"><h2>${label}</h2></div>`;
+    const g = document.createElement("div"); g.className="grid";
+    items.forEach(r=>{
+      if(r.type==="note"){ const n=DB.notes.find(x=>x.id===r.id); if(n) g.appendChild(noteCard(n)); }
+      else { const c=DB.classes.find(x=>x.id===r.id); if(c) g.appendChild(classCard(c)); }
+    });
+    sec.appendChild(g); wrap.appendChild(sec);
+  });
+  if(!any) wrap.innerHTML = emptyState("No recent activity","Open a class or note to see it appear here.");
+}
+
+/* ============ PROGRESS ============ */
+function renderProgress(el){
+  const totalTasks = DB.tasks.length, doneTasks = DB.tasks.filter(t=>t.completed).length;
+  el.innerHTML = `<h1>Progress</h1><p class="subtitle">Your academic progress at a glance.</p>
+    <div class="stat-row">
+      <div class="stat-box"><div class="num">${DB.classes.length}</div><div class="lbl">Total classes</div></div>
+      <div class="stat-box"><div class="num">${DB.notes.length}</div><div class="lbl">Total notes</div></div>
+      <div class="stat-box"><div class="num">${DB.resources.length}</div><div class="lbl">Total resources</div></div>
+      <div class="stat-box"><div class="num">${doneTasks}/${totalTasks}</div><div class="lbl">Tasks completed</div></div>
+    </div>
+    <div class="section-head"><h2>Progress by class</h2></div>
+    <div id="progByClass"></div>`;
+  const wrap = el.querySelector("#progByClass");
+  DB.classes.filter(c=>!c.is_archived).forEach(c=>{
+    const p = classProgress(c);
+    const row = document.createElement("div");
+    row.style.marginBottom="16px";
+    row.innerHTML = `<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;margin-bottom:6px"><span>${esc(c.code)} — ${esc(c.name)}</span><span>${p}%</span></div>
+      <div class="progress-track"><div class="progress-fill" style="width:${p}%;background:${c.color}"></div></div>`;
+    wrap.appendChild(row);
+  });
+}
+
+/* ============ SETTINGS ============ */
+const SETTINGS_TABS = ["General","Appearance","Classroom","Notes","Study","Data","About"];
+function renderSettings(el){
+  const activeTab = state.settingsTab || "General";
+  el.innerHTML = `<h1>Settings</h1><p class="subtitle">Customize StudySpace to fit how you study.</p>
+    <div class="settings-layout">
+      <div class="settings-nav">${SETTINGS_TABS.map(t=>`<button class="${t===activeTab?'active':''}" data-t="${t}">${t}</button>`).join('')}</div>
+      <div class="settings-panel" id="settingsPanel"></div>
+    </div>`;
+  el.querySelectorAll(".settings-nav button").forEach(b=>b.onclick=()=>{ state.settingsTab=b.dataset.t; render(); });
+  const panel = el.querySelector("#settingsPanel");
+  const s = DB.settings;
+
+  if(activeTab==="General"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Profile</h3>
+        <div class="field"><label>Name</label><input id="s-name" value="${esc(s.name)}"></div>
+      </div>`;
+    byId("s-name").oninput = (e)=>{ s.name=e.target.value; persist(); applySettings(); };
+  }
+  else if(activeTab==="Appearance"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Theme</h3>
+        <div class="seg" id="themeSeg">${["light","dark","system"].map(t=>`<button class="${s.theme===t?'active':''}" data-v="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>
+      </div>
+      <div class="settings-group"><h3>Accent colour</h3>
+        <div class="swatches">
+          ${[["indigo","#4F46E5"],["blue","#2563EB"],["purple","#7C3AED"],["green","#16A34A"],["teal","#0D9488"],["orange","#D97706"],["red","#DC2626"]]
+            .map(([k,col])=>`<span class="swatch ${s.accent===k?'sel':''}" data-a="${k}" style="background:${col}"></span>`).join('')}
+        </div>
+      </div>
+      <div class="settings-group"><h3>Density</h3>
+        <div class="seg" id="densitySeg">${["compact","comfortable","spacious"].map(t=>`<button class="${s.density===t?'active':''}" data-v="${t}">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>
+      </div>
+      <div class="settings-group"><h3>Note font</h3>
+        <select id="fontSel">${["Inter","Merriweather","Georgia","Source Serif"].map(f=>`<option ${s.font===f?'selected':''}>${f}</option>`).join('')}</select>
+      </div>`;
+    panel.querySelectorAll("#themeSeg button").forEach(b=>b.onclick=()=>{ s.theme=b.dataset.v; persist(); applySettings(); render(); });
+    panel.querySelectorAll(".swatch").forEach(sw=>sw.onclick=()=>{ s.accent=sw.dataset.a; persist(); applySettings(); render(); });
+    panel.querySelectorAll("#densitySeg button").forEach(b=>b.onclick=()=>{ s.density=b.dataset.v; persist(); applySettings(); render(); });
+    byId("fontSel").onchange=(e)=>{ s.font=e.target.value; persist(); applySettings(); };
+  }
+  else if(activeTab==="Classroom"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Classroom customization</h3>
+        <div class="field"><label>Classroom name</label><input id="c-name" value="${esc(s.classroom_name)}"></div>
+        <div class="field"><label>Subtitle</label><input id="c-sub" value="${esc(s.subtitle)}"></div>
+        <div class="field"><label>College</label><input id="c-college" value="${esc(s.college)}"></div>
+        <div class="field"><label>Academic year</label><input id="c-year" value="${esc(s.academic_year)}"></div>
+      </div>`;
+    ["c-name:classroom_name","c-sub:subtitle","c-college:college","c-year:academic_year"].forEach(pair=>{
+      const [id,key]=pair.split(":");
+      byId(id).oninput = (e)=>{ s[key]=e.target.value; persist(); applySettings(); };
+    });
+  }
+  else if(activeTab==="Notes"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Note behaviour</h3>
+        <div class="setting-row"><div><div class="lbl">Autosave</div><div class="desc">Automatically save notes as you type</div></div><div class="switch ${s.autosave?'on':''}" id="autosaveSw"></div></div>
+      </div>`;
+    byId("autosaveSw").onclick = (e)=>{ s.autosave=!s.autosave; e.currentTarget.classList.toggle("on", s.autosave); persist(); };
+  }
+  else if(activeTab==="Study"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Daily study goal</h3>
+        <div class="seg">${[30,60,90].map(m=>`<button class="${s.daily_goal===m?'active':''}" data-v="${m}">${m} min</button>`).join('')}</div>
+      </div>`;
+    panel.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{ s.daily_goal=+b.dataset.v; persist(); render(); });
+  }
+  else if(activeTab==="Data"){
+    panel.innerHTML = `
+      <div class="settings-group"><h3>Data management</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn" id="exportJson">Export all data (JSON)</button>
+          <button class="btn" id="exportMd">Export notes as Markdown</button>
+          <button class="btn btn-danger" id="deleteAll">Delete all study data</button>
+        </div>
+      </div>`;
+    byId("exportJson").onclick = ()=>downloadFile("studyspace-backup.json", JSON.stringify(DB,null,2));
+    byId("exportMd").onclick = ()=>{
+      const md = DB.notes.map(n=>`# ${n.title}\n\n${(n.tags||[]).map(t=>'#'+t).join(' ')}\n\n${(new DOMParser().parseFromString(n.body||'', 'text/html')).body.textContent}`).join('\n\n---\n\n');
+      downloadFile("studyspace-notes.md", md);
+    };
+    byId("deleteAll").onclick = ()=>{
+      confirmDialog("Delete all your study data?","This removes every class, note, resource and task permanently. This cannot be undone.", ()=>{
+        DB = defaultData(); persist(); closeModal(); toast("All data deleted"); go("dashboard");
+      });
+    };
+  }
+  else if(activeTab==="About"){
+    panel.innerHTML = `<div class="settings-group"><h3>About StudySpace</h3>
+      <p style="font-size:13.5px;color:var(--text-2);line-height:1.6">StudySpace is your personal Bible College study dashboard — organize classes, notes, Scripture, tasks and resources in one calm, focused place. All data is stored locally on this device.</p>
+    </div>`;
+  }
+}
+function downloadFile(name, content){
+  const blob = new Blob([content],{type:"text/plain"});
+  const a = document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  toast("Exported "+name);
+}
+
+/* ============ MODAL / CONFIRM ============ */
+function byId(id){ return document.getElementById(id); }
+function openModal(html){
+  byId("modalBody").innerHTML = html;
+  byId("overlay").classList.add("open");
+}
+function closeModal(){ byId("overlay").classList.remove("open"); }
+function confirmDialog(title, desc, onConfirm){
+  openModal(`<h3>${esc(title)}</h3><p style="font-size:13.5px;color:var(--text-2)">${esc(desc)}</p>
+    <div class="modal-actions"><button class="btn" id="cancelBtn">Cancel</button><button class="btn btn-danger" id="confirmBtn">Delete</button></div>`);
+  byId("cancelBtn").onclick = closeModal;
+  byId("confirmBtn").onclick = onConfirm;
+}
+function emptyState(title, desc, actionLabel, onAction){
+  const btnId = "empty-action-"+uid();
+  setTimeout(()=>{ const b=byId(btnId); if(b && onAction) b.onclick=onAction; },0);
+  return `<div class="empty">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z" opacity=".3"/><path d="M8 9h8M8 13h5"/></svg>
+    <div style="font-weight:700;font-size:14.5px;color:var(--text)">${esc(title)}</div>
+    <p>${esc(desc||'')}</p>
+    ${actionLabel? `<button class="btn btn-primary" id="${btnId}">${esc(actionLabel)}</button>`:''}
+  </div>`;
+}
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ============ GLOBAL SEARCH ============ */
+function openSearch(){
+  byId("searchOverlay").classList.add("open");
+  const input = byId("searchInput");
+  input.value = ""; input.focus();
+  runSearch("");
+  input.oninput = (e)=>runSearch(e.target.value);
+}
+function closeSearch(){ byId("searchOverlay").classList.remove("open"); }
+function runSearch(q){
+  const res = byId("searchResults");
+  q = q.trim().toLowerCase();
+  if(!q){ res.innerHTML = `<div class="search-group-label">Type to search classes, notes, tags, resources…</div>`; return; }
+  const classes = DB.classes.filter(c=>(c.name+c.code+c.teacher).toLowerCase().includes(q)).slice(0,5);
+  const notes = DB.notes.filter(n=>(n.title+noteExcerpt(n)+(n.tags||[]).join(' ')).toLowerCase().includes(q)).slice(0,5);
+  const resources = DB.resources.filter(r=>(r.title+r.description).toLowerCase().includes(q)).slice(0,5);
+  const tasks = DB.tasks.filter(t=>t.title.toLowerCase().includes(q)).slice(0,5);
+  let html = "";
+  if(classes.length) html += `<div class="search-group-label">Classes</div>` + classes.map(c=>`<div class="search-item" data-type="class" data-id="${c.id}">📚 ${esc(c.code)} — ${esc(c.name)}<span class="sub">${esc(c.teacher)}</span></div>`).join('');
+  if(notes.length) html += `<div class="search-group-label">Notes</div>` + notes.map(n=>`<div class="search-item" data-type="note" data-id="${n.id}">📝 ${esc(n.title||'Untitled')}<span class="sub">${getClass(n.class_id)?esc(getClass(n.class_id).code):''}</span></div>`).join('');
+  if(resources.length) html += `<div class="search-group-label">Resources</div>` + resources.map(r=>`<div class="search-item" data-type="resource" data-id="${r.id}">📁 ${esc(r.title)}</div>`).join('');
+  if(tasks.length) html += `<div class="search-group-label">Tasks</div>` + tasks.map(t=>`<div class="search-item" data-type="task" data-id="${t.id}">✅ ${esc(t.title)}</div>`).join('');
+  res.innerHTML = html || `<div class="search-group-label">No results found</div>`;
+  res.querySelectorAll(".search-item").forEach(it=>it.onclick=()=>{
+    const {type,id} = it.dataset;
+    closeSearch();
+    if(type==="class") openClass(id);
+    else if(type==="note") openNote(id);
+    else if(type==="resource") go("resources");
+    else if(type==="task") go("planner");
+  });
+}
+
+/* ============ MOBILE DRAWER ============ */
+function closeDrawer(){ byId("drawer").classList.remove("open"); byId("drawerOverlay").classList.remove("open"); }
+
+/* ============ INIT / EVENTS ============ */
+document.getElementById("overlay").addEventListener("click",(e)=>{ if(e.target.id==="overlay") closeModal(); });
+document.getElementById("searchOverlay").addEventListener("click",(e)=>{ if(e.target.id==="searchOverlay") closeSearch(); });
+document.getElementById("searchTrigger").onclick = openSearch;
+document.getElementById("hamburgerBtn").onclick = ()=>{ byId("drawer").classList.add("open"); byId("drawerOverlay").classList.add("open"); };
+document.getElementById("drawerOverlay").onclick = closeDrawer;
+document.getElementById("quickAddBtn").onclick = ()=>createNote();
+document.querySelectorAll(".bn-item[data-view]").forEach(b=>b.onclick=()=>go(b.dataset.view));
+document.getElementById("collapseBtn").onclick = ()=>{ DB.settings.sidebar_collapsed = !DB.settings.sidebar_collapsed; persist(); applySettings(); };
+document.getElementById("themeToggleBtn").onclick = ()=>{
+  const cur = document.documentElement.getAttribute("data-theme");
+  DB.settings.theme = cur==="dark" ? "light" : "dark";
+  persist(); applySettings(); render();
+};
+document.addEventListener("keydown",(e)=>{
+  if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="k"){ e.preventDefault(); openSearch(); }
+  if(e.key==="Escape"){ closeModal(); closeSearch(); closeDrawer(); }
+});
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ()=>{ if(DB.settings.theme==="system"){ applySettings(); } });
+
+applySettings();
+render();
+})();
+</script>
+</body>
+</html>
